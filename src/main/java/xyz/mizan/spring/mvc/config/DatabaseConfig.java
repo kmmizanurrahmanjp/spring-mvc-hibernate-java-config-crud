@@ -1,22 +1,69 @@
 package xyz.mizan.spring.mvc.config;
 
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import java.io.IOException;
+import java.util.Properties;
+
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.core.io.ClassPathResource;
-
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
+import org.springframework.orm.hibernate5.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
+@EnableTransactionManagement
+@PropertySource("classpath:database.properties")
 public class DatabaseConfig {
 
-	 //<context:property-placeholder location="classpath:application.properties"></context:property-placeholder>
-    @Bean
-    public PropertyPlaceholderConfigurer getPropertyPlaceholderConfigurer()
-    {
-        PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
-        ppc.setLocation(new ClassPathResource("application.properties"));
-        ppc.setIgnoreUnresolvablePlaceholders(true);
-        return ppc;
-    }
+	@Autowired
+	private Environment env;
+
+	@Bean
+	public DataSource getDataSource() {
+		BasicDataSource dataSource = new BasicDataSource();
+		dataSource.setDriverClassName(env.getProperty("database.driver"));
+		dataSource.setUrl(env.getProperty("database.url"));
+		dataSource.setUsername(env.getProperty("database.user"));
+		dataSource.setPassword(env.getProperty("database.password"));
+		return dataSource;
+	}
+
+	@Bean
+	public SessionFactory sessionFactory() {
+		LocalSessionFactoryBean lsfb = new LocalSessionFactoryBean();
+		lsfb.setDataSource(getDataSource());
+		lsfb.setPackagesToScan("xyz.mizan.spring.mvc.entity");
+		lsfb.setHibernateProperties(hibernateProperties());
+		try {
+			lsfb.afterPropertiesSet();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return lsfb.getObject();
+	}
+
+	@Bean
+	public HibernateTransactionManager hibTransMan() {
+		return new HibernateTransactionManager(sessionFactory());
+	}
+	
+	@Bean
+	public HibernateTemplate hibernateTemplate() {
+		return new HibernateTemplate(sessionFactory());
+	}
+
+	private Properties hibernateProperties() {
+		Properties properties = new Properties();
+		properties.put("hibernate.dialect", env.getProperty("hibernate.dialect"));
+		properties.put("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
+		properties.put("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
+		return properties;
+	}
 }

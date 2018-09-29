@@ -2,8 +2,11 @@ package xyz.mizan.spring.mvc.repository;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import xyz.mizan.spring.mvc.entity.Employee;
 
+@Service
 public interface EmployeeDAO {
 
 	public void addEmployee(Employee employee);

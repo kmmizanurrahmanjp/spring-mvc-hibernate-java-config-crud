@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,24 +19,16 @@ import xyz.mizan.spring.mvc.service.EmployeeService;
 
 
 @Controller
-@RequestMapping("/")
+@ComponentScan(basePackages = "xyz.mizan.spring.mvc.service") 
 public class EmployeeController {
 
 	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(EmployeeController.class);
 
-
 	@Autowired
 	private EmployeeService employeeService;
 	
-	
-	public ModelAndView index(ModelAndView model){
-		System.out.println("hello");
-		model.setViewName("index");
-		return model;
-	}
-
-	@RequestMapping(value = "/list")
+	@RequestMapping(value = "/")
 	public ModelAndView listEmployee(ModelAndView model) throws IOException {
 		List<Employee> listEmployee = employeeService.getAllEmployees();
 		model.addObject("listEmployee", listEmployee);
@@ -59,14 +52,14 @@ public class EmployeeController {
 		} else {
 			employeeService.updateEmployee(employee);
 		}
-		return new ModelAndView("redirect:/list");
+		return new ModelAndView("redirect:/");
 	}
 
 	@RequestMapping(value = "/deleteEmployee", method = RequestMethod.GET)
 	public ModelAndView deleteEmployee(HttpServletRequest request) {
 		int employeeId = Integer.parseInt(request.getParameter("id"));
 		employeeService.deleteEmployee(employeeId);
-		return new ModelAndView("redirect:/list");
+		return new ModelAndView("redirect:/");
 	}
 
 	@RequestMapping(value = "/editEmployee", method = RequestMethod.GET)
@@ -75,7 +68,6 @@ public class EmployeeController {
 		Employee employee = employeeService.getEmployee(employeeId);
 		ModelAndView model = new ModelAndView("employee-form");
 		model.addObject("employee", employee);
-
 		return model;
 	}
 }

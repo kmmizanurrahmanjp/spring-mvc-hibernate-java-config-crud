@@ -2,11 +2,11 @@ package xyz.mizan.spring.mvc.config;
 
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
-public class ServletInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
  
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class[] { WebConfig.class };
+        return new Class[] { AppConfig.class };
     }
   
     @Override
